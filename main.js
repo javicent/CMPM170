@@ -1,10 +1,7 @@
-title = "SNOWY DAY";
+title = "Dodgey";
 
 description = `
-Avoid Snow
 
-[Hold] 
-Pause Snow
 `;
 
 /*
@@ -34,8 +31,11 @@ ll  ll
 const G = {
   WIDTH: 400,
   HEIGHT: 225,
-  STAR_SPEED_MIN: 0.5,
-  STAR_SPEED_MAX: 1.0
+  SPEED: 1,
+  WIDTH_MIN: 5,
+  WIDTH_MAX: 20,
+  HEIGHT_MIN: 5,
+  HEIGHT_MAX: 20,
 };
 
 options = {
@@ -43,12 +43,12 @@ options = {
   isPlayingBgm: true,
   isReplayEnabled: true,
   isDrawingScoreFront: true,
-  theme: "dark"
+  theme: "blue"
 };
 
 /**
 * @typedef {{
-* pos: Vector, speed: number
+* pos: Vector, size: Vector
 * }} Star
 */
   
@@ -58,7 +58,7 @@ options = {
 let stars = [];
 startick = 0;
 
-/** @type {{pos: Vector, vx: number, ty: number}} */
+/** @type {{pos: Vector, size: Vector}} */
 let player;
 
 function update() {
@@ -66,10 +66,12 @@ function update() {
   if (!ticks) {
     //star setup
     stars = [];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 7; i++) {
       stars.push({
-          pos: vec(G.WIDTH, rnd(0, G.HEIGHT)),
-          speed: rnd(G.STAR_SPEED_MIN, G.STAR_SPEED_MAX)
+          pos: vec(rnd(G.WIDTH, G.WIDTH + 500), rnd(0, G.HEIGHT/2)),
+//          size: vec(100,100),
+          size: vec(rnd(G.WIDTH_MIN,G.WIDTH_MAX),rnd(G.HEIGHT_MIN,G.HEIGHT_MAX)),
+          passed: false;
       });
     }
 
@@ -84,50 +86,37 @@ function update() {
   // Update for Star
   stars.forEach((s) => {
     // Move the star downwards
-    s.pos.x -= s.speed;
+    s.pos.x -= G.SPEED;
     // Bring the star back to top once it's past the bottom of the screen
     if (s.pos.x < 0) {
       s.pos.x = G.WIDTH;
       s.pos.y = rnd(1, G.HEIGHT - 1);
     }
-
     // Choose a color to draw
     color("cyan");
-    rect(s.pos.x, s.pos.y, 3, 3);
+    rect(s.pos.x, s.pos.y, s.size.x, s.size.y);
 
-    if (s.pos.y >= player.pos.y - 3.25 && s.pos.y <= player.pos.y + 3.25) {
-      if (s.pos.x >= player.pos.x - 3.25 && s.pos.x <= player.pos.x + 3.25) {
+    if (s.pos.y >= player.pos.y - s.size.y - 5 && s.pos.y <= player.pos.y + 5) {
+      if (s.pos.x >= player.pos.x - s.size.x + 5 && s.pos.x <= player.pos.x + s.size.x/2 - 5) {
         end();
       }
-      
     }
+    if(player.pos.x > s.pos.x){
 
+    }
   });
 
-  
-  
-  if (input.isPressed) {
-    stars.forEach((s) => {
-      s.speed = 0;
-    });
-  }
-  else {
-    startick += 1;
-    if (startick > 120) {
-      stars.push({
-      pos: vec(rnd(0, G.WIDTH), 0),
-      speed: rnd(G.STAR_SPEED_MIN, G.STAR_SPEED_MAX)
-      });
-      startick = 0;
-      addScore(1, player.pos);
+  if (input.isPressed && player.pos.y > 5) {
+    player.pos.y -= 1;
+  }else{
+    if(player.pos.y < G.HEIGHT-102){
+      player.pos.y += 1;
     }
-    stars.forEach((s) => {
-      s.speed = rnd(G.STAR_SPEED_MIN, G.STAR_SPEED_MAX);
-    });
   }
 
+
   color("light_black");
-  rect(0, 100, G.WIDTH, 200);
+  rect(0, G.HEIGHT-100, G.WIDTH, 100);
 }
 
 addEventListener("load", onLoad);
